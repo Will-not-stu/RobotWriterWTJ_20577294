@@ -21,7 +21,7 @@ int ReadShapesFile(const char *FileName, Shape **shapes, int *numShapes) // ** a
     }
 
 /* Checking header of text file */
-    int HeaderResult = fscanf(file, "%50s %d", Header, numShapes);      // %50s is the length of the character array
+    int HeaderResult = fscanf(file, "%49s %d", Header, numShapes);      // %49s is the length of the character array (remembering index 0)
                                                                         // Extract Header name and number of shapes in the file, 2 indicates succesful reading of both parts of the header
     switch(HeaderResult)
         {
@@ -34,7 +34,7 @@ int ReadShapesFile(const char *FileName, Shape **shapes, int *numShapes) // ** a
                 fclose(file);
                 return 1;
             case 1:
-                printf("Error: Missing or invalid number of shapes in header\n");
+                printf("Error: Missing header or invalid number of shapes in header\n");
                 fclose(file);
                 return 1;
             case 2:
@@ -67,7 +67,7 @@ int ReadShapesFile(const char *FileName, Shape **shapes, int *numShapes) // ** a
     if (*shapes == NULL)
         {
             printf("Error: Shape memory allocation failed\n");
-            // free memory
+            FreeShapeData(shapes, numShapes);
             fclose(file);
             return 1;
         }
@@ -80,33 +80,33 @@ int ReadShapesFile(const char *FileName, Shape **shapes, int *numShapes) // ** a
                 {
                     case EOF:                                                   
                         printf("Error: No shape data or file reading failure\n");
-                        // free memory
+                        FreeShapeData(shapes, numShapes);
                         fclose(file);
                         return 1;
                     case 0:
                         printf("Error: Unable to read shape name\n");
-                        // free memory
+                        FreeShapeData(shapes, numShapes);
                         fclose(file);
                         return 1;
                     case 1:
                         printf("Error: Missing or invalid number of points in shape data\n");
-                        // free memory
+                        FreeShapeData(shapes, numShapes);
                         fclose(file);
                         return 1;
                     case 2:
                         break;
                     default:
                         printf("Error: An unexpected error has occurred while reading the shape data\n");
-                        // free memory
+                        FreeShapeData(shapes, numShapes);
                         fclose(file);
                         return 1;
                 }
 
 /* Check that there is enough points to draw a shape not a line */
-            if ((*shapes)[i].numPoints < 3);
+            if ((*shapes)[i].numPoints < 3)
                 {
                     printf("Error: There is not a sufficient amount of points to draw a shape\n");
-                    // free memory
+                    FreeShapeData(shapes, numShapes);
                     fclose(file);
                     return 1;
                 }
@@ -116,7 +116,7 @@ int ReadShapesFile(const char *FileName, Shape **shapes, int *numShapes) // ** a
             if((*shapes)[i].points == NULL)
                 {
                     printf("Error: Stroke data memory allocation failed for the %s", (*shapes)[i].shapeName);
-                    // free memory blocks
+                    FreeShapeData(shapes, numShapes);
                     fclose(file);
                     return 1;
                 }
@@ -131,29 +131,29 @@ int ReadShapesFile(const char *FileName, Shape **shapes, int *numShapes) // ** a
                         {
                             case EOF:
                                 printf("Error: No stroke data or file reading failure\n");                                              // Unexpected EOF detetcted
-                                // free memory
+                                FreeShapeData(shapes, numShapes);
                                 fclose(file);
                                 return 1;
                             case 0:
                                 printf("Error: Invalid x co-ordinate in shape %s, point %d\n", (*shapes)[i].shapeName, j + 1);          // Checking for correct data type and that data is there as expected
-                                // free memory
+                                FreeShapeData(shapes, numShapes);
                                 fclose(file);
                                 return 1;
                             case 1:
                                 printf("Error: Invalid y co-ordinate in shape %s, point %d\n", (*shapes)[i].shapeName, j + 1);          // Checking for correct data type and that data is there as expected
-                                // free memory
+                                FreeShapeData(shapes, numShapes);
                                 fclose(file);
                                 return 1;
                             case 2:
                                 printf("Error: Invalid penState in shape %s, point %d\n", (*shapes)[i].shapeName, j + 1);              // Checking for correct data type and that data is there as expected
-                                // free memory
+                                FreeShapeData(shapes, numShapes);
                                 fclose(file);
                                 return 1;
                             case 3:                                                                                                     // All data read successfully as expected
                                 break;
                             default:
                                 printf("Error: An unexpected error has occurred while reading the stroke data\n");
-                                // free memory
+                                FreeShapeData(shapes, numShapes);
                                 fclose(file);
                                 return 1;
                         }
@@ -162,21 +162,21 @@ int ReadShapesFile(const char *FileName, Shape **shapes, int *numShapes) // ** a
                     if ((*shapes)[i].points[j].penState != 0 && (*shapes)[i].points[j].penState != 1)                         // Checking for valid pen state "0" or "1"
                         {
                             printf("Error: Invalid pen state in shape %s, point %d.\n", (*shapes)[i].shapeName, j + 1);
-                            // Free memory
+                            FreeShapeData(shapes, numShapes);
                             fclose(file);
                             return 1;
                         }
                     if ((*shapes)[i].points[j].x < 0 || !isfinite((*shapes)[i].points[j].x))                                         // Checking for valid coordinates >= 0 and not infinite
                         {
                             printf("Error: Invalid x co-ordinate in shape %s, point %d\n", (*shapes)[i].shapeName, j + 1);
-                            // free memory
+                            FreeShapeData(shapes, numShapes);
                             fclose(file);
                             return 1;
                         }
                     if ((*shapes)[i].points[j].y < 0 || !isfinite((*shapes)[i].points[j].y))                                         // Checking for valid coordinates >= 0 and not infinite
                         {
                             printf("Error: Invalid y co-ordinate in shape %s, point %d\n", (*shapes)[i].shapeName, j + 1);
-                            // free memory
+                            FreeShapeData(shapes, numShapes);
                             fclose(file);
                             return 1;
                         }
@@ -189,7 +189,7 @@ int ReadShapesFile(const char *FileName, Shape **shapes, int *numShapes) // ** a
         if (fscanf(file, " %c", &ExtraData) != EOF)             // SPACE %c does not cause an error to be triggered for spaces, white lines or tabs
         {
             printf("Error: Unexpected extra data has been detected in the file!\n");
-            // free memory
+            FreeShapeData(shapes, numShapes);
             fclose(file);
             return 1;
         }
@@ -197,7 +197,7 @@ int ReadShapesFile(const char *FileName, Shape **shapes, int *numShapes) // ** a
         if (ferror(file))                                       // Returns "1" if there has been an error reading the file
         {
             printf("Error: File reading error has occurred!\n");
-            // free memory                                      // Could just implement a free memory function
+            FreeShapeData(shapes, numShapes);                                      // Could just implement a free memory function
             fclose(file);
             return 1;
         }
@@ -212,4 +212,22 @@ printf("Success: File was opened, data was read and data was stored all successf
 */
 
     return 0; // Return 0 to indicate success
+}
+
+void FreeShapeData(Shape **shapes, int *numShapes)
+{
+    int i;
+
+    /* Check if there is memory to release */
+    if (*shapes != NULL)
+        {
+            for (i = 0; i < *numShapes; i++)
+                {
+                    free((*shapes)[i].points);              // free the stroke data for each shape
+                    (*shapes)[i].points = NULL;             // Make sure pointer is not dangling and points to NULL
+                }
+            free(*shapes);                                  // free the shapes
+        }
+    *shapes = NULL;                                 // Set all data to NULL to start again fresh
+    *numShapes = NULL;                              // numShapes could have a value without *shapes having anything in  
 }

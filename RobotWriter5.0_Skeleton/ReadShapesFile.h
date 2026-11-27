@@ -15,5 +15,5 @@
     } Shape;
     
     int ReadShapesFile(const char *FileName, Shape **shapes, int *numShapes); // Function prototype
-
+    void FreeShapeData(Shape **shapes, int *numShapes);
 #endif

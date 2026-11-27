@@ -5,12 +5,71 @@
 #include "rs232.h"
 #include "serial.h"
 
+/* Student written functions*/
+#include "ReadShapesFile.h"
+
+
 #define bdrate 115200               /* 115200 baud */
 
 void SendCommands (char *buffer );
 
 int main()
 {
+    const char *FileName = "ShapeStrokeData.txt"; // const char * is a pointer to read-only data, so the string literal cannot be modified
+    Shape *shapes = NULL;           // Pointer to an array of Shape structures, no memory allocated yet, so nothing to point to
+    int numShapes = 0;              // Number of shapes read from the file
+
+    int ReadFile = ReadShapesFile(FileName, &shapes, &numShapes);
+        if (ReadFile != 1)
+        {
+            printf("Error: Unable to load shapes file, error specified above!\n");
+            return 1;
+        }
+    
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     char buffer[100];
  
     // If we cannot open the port then give up immediatly
